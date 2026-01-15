@@ -20,6 +20,8 @@ from helpers.browser_factory import create_driver as factory_create_driver, clea
 from services.kiro_oauth import perform_kiro_oauth_in_browser, KiroOAuthClient
 from services.aws_sso_oidc import perform_aws_sso_oidc_auto
 
+# 截图保存目录 (src 目录)
+SCREENSHOT_DIR = str(Path(__file__).parent.parent)
 
 fake = Faker('en_US')
 
@@ -729,8 +731,11 @@ def run(fixed_account=None):
             try:
                 print("正在寻找验证码输入框...")
                 # 增加更长的等待，确保页面已稳定加载
-                # 代理环境下，页面可能还在疯狂加载资源
                 human_delay(4, 6)
+                
+                # 截图：验证码页面
+                driver.save_screenshot(os.path.join(SCREENSHOT_DIR, "step5_verification_page.png"))
+                print(f"📸 截图已保存: step5_verification_page.png")
                 
                 # 等待输入框出现且可交互
                 code_input = wait.until(
@@ -739,11 +744,25 @@ def run(fixed_account=None):
                 
                 # 再等一下，防止点击时输入框跳动
                 human_delay(1, 2)
+                
+                # 模拟更真实的人类行为：先移动鼠标到输入框
+                actions = ActionChains(driver)
+                actions.move_to_element(code_input).perform()
+                human_delay(0.3, 0.6)
+                
                 code_input.click()
                 human_delay(0.5, 1)
                 
-                human_type(code_input, verification_code)
+                # 逐个字符输入验证码，模拟人类打字
+                for char in verification_code:
+                    code_input.send_keys(char)
+                    time.sleep(random.uniform(0.1, 0.25))  # 每个字符间隔
+                
                 print("已填写验证码")
+                
+                # 截图：填写验证码后
+                driver.save_screenshot(os.path.join(SCREENSHOT_DIR, "step5_after_code.png"))
+                print(f"📸 截图已保存: step5_after_code.png")
                 
                 # 填写完后再等一下
                 human_delay(1.5, 2.5)
@@ -777,6 +796,39 @@ def run(fixed_account=None):
                     from selenium.webdriver.common.keys import Keys
                     code_input.send_keys(Keys.ENTER)
                 
+                # 点击后等待，检查是否有错误弹窗，如果有就再点一次 Continue
+                print("等待页面响应...")
+                human_delay(3, 5)
+                
+                # 截图：点击 Continue 后
+                driver.save_screenshot(os.path.join(SCREENSHOT_DIR, "step5_after_continue.png"))
+                print(f"📸 截图已保存: step5_after_continue.png")
+                
+                # 检查是否有错误弹窗，如果有就再点一次 Continue (最多重试3次)
+                for retry in range(3):
+                    try:
+                        page_source = driver.page_source
+                        if "Error" in page_source or "error processing" in page_source or "Sorry" in page_source or "try again" in page_source.lower():
+                            print(f"⚠️  检测到错误提示，再次点击 Continue... (重试 {retry + 1}/3)")
+                            human_delay(1, 2)
+                            for xpath in verify_selectors:
+                                try:
+                                    verify_btn = driver.find_element(By.XPATH, xpath)
+                                    if verify_btn.is_displayed():
+                                        # 模拟人类点击
+                                        actions = ActionChains(driver)
+                                        actions.move_to_element(verify_btn).perform()
+                                        human_delay(0.2, 0.5)
+                                        driver.execute_script("arguments[0].click();", verify_btn)
+                                        print("✅ 已再次点击 Continue")
+                                        human_delay(3, 5)
+                                        break
+                                except: continue
+                        else:
+                            break  # 没有错误，跳出重试循环
+                    except: 
+                        break
+                
                 # 点击后等待足够长的时间让页面跳转
                 print("等待页面跳转 (由于代理可能较慢)...")
                 human_delay(8, 12)
@@ -789,8 +841,8 @@ def run(fixed_account=None):
         # 第六步：设置密码
         print("正在准备设置密码...")
         human_delay(5, 8)  # 等待验证通过后的跳转
-        driver.save_screenshot("screenshots/step6_before_password.png")
-        print(f"📸 截图已保存: screenshots/step6_before_password.png")
+        driver.save_screenshot(os.path.join(SCREENSHOT_DIR, "step6_before_password.png"))
+        print(f"📸 截图已保存: {os.path.join(SCREENSHOT_DIR, 'step6_before_password.png')}")
         print(f"当前页面: {driver.current_url}")
         
         password = generate_strong_password()
@@ -837,8 +889,8 @@ def run(fixed_account=None):
                             except: continue
                      except: pass
                 
-                driver.save_screenshot("screenshots/step6_after_password.png")
-                print(f"📸 截图已保存: screenshots/step6_after_password.png")
+                driver.save_screenshot(os.path.join(SCREENSHOT_DIR, "step6_after_password.png"))
+                print(f"📸 截图已保存: {os.path.join(SCREENSHOT_DIR, 'step6_after_password.png')}")
                 
                 # 点击创建/继续
                 human_delay(1, 2)
