@@ -1,0 +1,122 @@
+# 邮箱服务配置
+email:
+  # 你部署的 cloudflare_temp_email Worker 服务地址
+  worker_url: "https://your-worker.workers.dev"
+
+  # 邮箱域名（你在 Cloudflare Email Routing 中配置的收信域名）
+  domain: "your-domain.com"
+
+  # 生成的随机邮箱前缀长度
+  prefix_length: 10
+
+  # 等待验证邮件的超时时间（秒）
+  wait_timeout: 120
+
+  # 轮询邮件的间隔时间（秒）
+  poll_interval: 3
+
+  # 管理员密码（用于管理员 API）
+  admin_password: "your-admin-password"
+
+# 浏览器配置
+browser:
+  headless: false      # 是否无头模式
+  slow_mo: 100         # 操作延迟（毫秒）
+  
+  # 浏览器类型: chrome 或 edge
+  type: "edge"         # 可选: chrome, edge (推荐 edge，Windows 自带)
+  
+  # WebDriver 获取策略
+  # auto: 自动尝试所有方式
+  # manager: 仅使用 webdriver-manager 自动下载
+  # system: 仅使用系统 PATH 中的驱动
+  # local: 仅使用本地目录的驱动文件
+  driver_strategy: "auto"
+
+# 地区环境配置
+# 支持的地区: germany (德国), japan (日本), usa (美国)
+region:
+  # 当前使用的地区
+  current: "usa"    # 可选: germany, japan, usa
+  
+  # 设备类型: desktop (桌面) 或 mobile (移动)
+  device_type: "desktop"  # 可选: desktop, mobile
+  
+  # 代理配置
+  # 是否使用代理 (如果没有代理服务，设置为 false)
+  use_proxy: false
+  
+  # 代理模式: static (静态代理) 或 dynamic (动态API)
+  proxy_mode: "static"  # 可选: static, dynamic
+  
+  # 静态代理配置 (格式: http://host:port 或 socks5://host:port)
+  proxy_url: ""
+  
+  # 动态代理API配置
+  proxy_api:
+    # API URL (返回格式: ip:port，每次请求返回新的代理)
+    url: "http://your-proxy-api.com/get?key=YOUR_API_KEY"
+    
+    # 请求超时时间（秒）
+    timeout: 10
+    
+    # 代理协议 (http 或 socks5)
+    protocol: "http"  # 可选: http, socks5
+    
+    # 是否需要认证
+    auth_required: false
+    username: ""
+    password: ""
+  
+  # 各地区详细配置
+  profiles:
+    germany:
+      locale: "de-DE"
+      timezone: "Europe/Berlin"
+      accept_language: "de-DE,de;q=0.9,en;q=0.8"
+      # 桌面 User-Agent
+      desktop_user_agents:
+        - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      # 移动 User-Agent
+      mobile_user_agents:
+        - "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        - "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+      
+    japan:
+      locale: "ja-JP"
+      timezone: "Asia/Tokyo"
+      accept_language: "ja-JP,ja;q=0.9,en;q=0.8"
+      # 桌面 User-Agent
+      desktop_user_agents:
+        - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      # 移动 User-Agent (日本常用 iPhone)
+      mobile_user_agents:
+        - "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (Linux; Android 14; SO-51D) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+      
+    usa:
+      locale: "en-US"
+      timezone: "America/New_York"
+      accept_language: "en-US,en;q=0.9"
+      # 桌面 User-Agent
+      desktop_user_agents:
+        - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      # 移动 User-Agent
+      mobile_user_agents:
+        - "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
+        - "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        - "Mozilla/5.0 (Linux; Android 14; SM-S928U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+
+# HTTP 配置
+http:
+  timeout: 30          # 请求超时（秒）
