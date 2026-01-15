@@ -789,7 +789,8 @@ def run(fixed_account=None):
         # 第六步：设置密码
         print("正在准备设置密码...")
         human_delay(5, 8)  # 等待验证通过后的跳转
-        driver.save_screenshot("screenshot.png")
+        driver.save_screenshot("screenshots/step6_before_password.png")
+        print(f"📸 截图已保存: screenshots/step6_before_password.png")
         print(f"当前页面: {driver.current_url}")
         
         password = generate_strong_password()
@@ -836,7 +837,8 @@ def run(fixed_account=None):
                             except: continue
                      except: pass
                 
-                driver.save_screenshot("screenshot.png")
+                driver.save_screenshot("screenshots/step6_after_password.png")
+                print(f"📸 截图已保存: screenshots/step6_after_password.png")
                 
                 # 点击创建/继续
                 human_delay(1, 2)
