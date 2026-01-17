@@ -595,103 +595,126 @@ def perform_aws_sso_oidc_auto(
     # 等待登录页面加载
     time.sleep(3)
     
-    # 输入邮箱
-    print(f"📧 输入邮箱: {email}")
-    short_wait = WebDriverWait(driver, 5)
-    email_input = None
-    try:
-        email_input = short_wait.until(EC.presence_of_element_located((
-            By.CSS_SELECTOR, 
-            "input[placeholder*='example.com'], input[type='email'], input[name='email']"
-        )))
-    except:
-        try:
-            email_input = driver.find_element(By.XPATH, "//input[@type='text' or @type='email']")
-        except:
-            pass
-    
-    if not email_input:
-        raise Exception("找不到邮箱输入框")
-    
-    email_input.clear()
-    email_input.send_keys(email)
-    print(f"✅ 已填写邮箱")
-    time.sleep(1)
-    
-    # 点击继续按钮
-    print(f"🔘 点击继续按钮...")
-    _click_button(driver, [
-        "//span[contains(text(), '继续')]/parent::button",
-        "//span[contains(text(), 'Continue')]/parent::button",
-        "//button[contains(text(), '继续')]",
-        "//button[contains(text(), 'Continue')]",
-        "//button[@type='submit']",
-    ])
-    time.sleep(3)
-    
-    # 输入密码
-    print(f"🔑 输入密码")
-    password_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']")))
-    password_input.clear()
-    password_input.send_keys(password)
-    print(f"✅ 已填写密码")
-    time.sleep(1)
-    
-    # 点击登录按钮
-    print(f"🔘 点击登录按钮...")
-    _click_button(driver, [
-        "//span[contains(text(), '继续')]/parent::button",
-        "//span[contains(text(), 'Continue')]/parent::button",
-        "//span[contains(text(), 'Sign in')]/parent::button",
-        "//button[contains(text(), '继续')]",
-        "//button[contains(text(), 'Continue')]",
-        "//button[@type='submit']",
-    ])
-    time.sleep(3)
-    
-    # 检查是否需要验证码
+    # 检查是否已经登录（cookie 有效），直接跳到授权页面
     page_source = driver.page_source
+    already_logged_in = False
     
-    if "Verify your identity" in page_source or "验证码" in page_source or "6-digit" in page_source:
-        print("\n📧 检测到需要邮箱验证码...")
-        time.sleep(3)
+    if "Confirm this code" in page_source or "Authorization requested" in page_source:
+        print("🔓 检测到已登录状态（cookie 有效），跳过登录步骤...")
+        already_logged_in = True
+    elif "Allow" in page_source and ("access your data" in page_source or "Kiro" in page_source):
+        print("🔓 检测到已登录状态（cookie 有效），直接进入授权页面...")
+        already_logged_in = True
+    elif "Request approved" in page_source or "successfully" in page_source.lower():
+        print("🔓 检测到已完成授权...")
+        already_logged_in = True
+    
+    if not already_logged_in:
+        # 输入邮箱
+        print(f"📧 输入邮箱: {email}")
+        short_wait = WebDriverWait(driver, 5)
+        email_input = None
+        try:
+            email_input = short_wait.until(EC.presence_of_element_located((
+                By.CSS_SELECTOR, 
+                "input[placeholder*='example.com'], input[type='email'], input[name='email']"
+            )))
+        except:
+            try:
+                email_input = driver.find_element(By.XPATH, "//input[@type='text' or @type='email']")
+            except:
+                pass
         
-        # 获取验证码
-        verification_code = mail_client.wait_for_code(email, timeout=120)
+        if not email_input:
+            # 再次检查是否已在授权页面
+            page_source = driver.page_source
+            if "Confirm this code" in page_source or "Allow" in page_source or "Request approved" in page_source:
+                print("🔓 未找到邮箱输入框，但检测到授权页面，继续处理...")
+                already_logged_in = True
+            else:
+                raise Exception("找不到邮箱输入框，且不在授权页面")
         
-        if verification_code:
-            print(f"✅ 收到验证码: {verification_code}")
+        if not already_logged_in:
+            email_input.clear()
+            email_input.send_keys(email)
+            print(f"✅ 已填写邮箱")
+            time.sleep(1)
             
-            # 填写验证码
-            code_input = None
-            for selector in ["input[placeholder*='6-digit']", "input[placeholder*='digit']", "input[name='code']", "input[type='text']"]:
-                try:
-                    code_input = driver.find_element(By.CSS_SELECTOR, selector)
-                    if code_input.is_displayed():
-                        break
-                except:
-                    continue
+            # 点击继续按钮
+            print(f"🔘 点击继续按钮...")
+            _click_button(driver, [
+                "//span[contains(text(), '继续')]/parent::button",
+                "//span[contains(text(), 'Continue')]/parent::button",
+                "//button[contains(text(), '继续')]",
+                "//button[contains(text(), 'Continue')]",
+                "//button[@type='submit']",
+            ])
+            time.sleep(3)
             
-            if code_input:
-                code_input.clear()
-                code_input.send_keys(verification_code)
-                print(f"✅ 已填写验证码")
-                time.sleep(1)
-                
-                # 点击验证按钮
-                _click_button(driver, [
-                    "//span[contains(text(), '继续')]/parent::button",
-                    "//span[contains(text(), 'Continue')]/parent::button",
-                    "//span[contains(text(), 'Verify')]/parent::button",
-                    "//button[contains(text(), '继续')]",
-                    "//button[@type='submit']",
-                ])
+            # 输入密码
+            print(f"🔑 输入密码")
+            password_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']")))
+            password_input.clear()
+            password_input.send_keys(password)
+            print(f"✅ 已填写密码")
+            time.sleep(1)
+            
+            # 点击登录按钮
+            print(f"🔘 点击登录按钮...")
+            _click_button(driver, [
+                "//span[contains(text(), '继续')]/parent::button",
+                "//span[contains(text(), 'Continue')]/parent::button",
+                "//span[contains(text(), 'Sign in')]/parent::button",
+                "//button[contains(text(), '继续')]",
+                "//button[contains(text(), 'Continue')]",
+                "//button[@type='submit']",
+            ])
+            time.sleep(3)
+            
+            # 检查是否需要验证码
+            page_source = driver.page_source
+            
+            if "Verify your identity" in page_source or "验证码" in page_source or "6-digit" in page_source:
+                print("\n📧 检测到需要邮箱验证码...")
                 time.sleep(3)
-        else:
-            raise Exception("无法获取验证码")
+                
+                # 获取验证码
+                verification_code = mail_client.wait_for_code(email, timeout=120)
+                
+                if verification_code:
+                    print(f"✅ 收到验证码: {verification_code}")
+                    
+                    # 填写验证码
+                    code_input = None
+                    for selector in ["input[placeholder*='6-digit']", "input[placeholder*='digit']", "input[name='code']", "input[type='text']"]:
+                        try:
+                            code_input = driver.find_element(By.CSS_SELECTOR, selector)
+                            if code_input.is_displayed():
+                                break
+                        except:
+                            continue
+                    
+                    if code_input:
+                        code_input.clear()
+                        code_input.send_keys(verification_code)
+                        print(f"✅ 已填写验证码")
+                        time.sleep(1)
+                        
+                        # 点击验证按钮
+                        _click_button(driver, [
+                            "//span[contains(text(), '继续')]/parent::button",
+                            "//span[contains(text(), 'Continue')]/parent::button",
+                            "//span[contains(text(), 'Verify')]/parent::button",
+                            "//button[contains(text(), '继续')]",
+                            "//button[@type='submit']",
+                        ])
+                        time.sleep(3)
+                else:
+                    raise Exception("无法获取验证码")
     
     # 处理多个授权确认页面
     _handle_authorization_pages(driver, wait)
+    
     # Step 4: 轮询获取 Token
     print("\n" + "="*50)
     print("[AWS SSO] Step 4: 轮询获取 Token")
