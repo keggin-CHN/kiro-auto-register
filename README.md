@@ -2,6 +2,12 @@
 
 🤖 全自动批量注册 AWS Builder ID 账号，并获取 Kiro OAuth Token 和 AWS SSO OIDC Token
 
+<h1 align="center">
+  🚨 警告：Kiro 封号政策更新 🚨
+  <br>
+  本仓库方法已失效，仅作讨论用途
+</h1>
+
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
