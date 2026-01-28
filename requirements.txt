@@ -1,0 +1,7 @@
+selenium
+undetected-chromedriver
+webdriver-manager
+requests
+PyYAML
+cbor2
+Faker
